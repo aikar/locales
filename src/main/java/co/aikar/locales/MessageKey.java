@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MessageKey {
-    private static final AtomicInteger counter = new AtomicInteger();
+    private static final AtomicInteger counter = new AtomicInteger(1);
     private static final Map<String, MessageKey> keyMap = new ConcurrentHashMap<>();
     private final int id = counter.getAndIncrement();
     private final String key;

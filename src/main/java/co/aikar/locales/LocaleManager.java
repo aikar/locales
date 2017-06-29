@@ -7,38 +7,39 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 @SuppressWarnings("WeakerAccess")
 public class LocaleManager <T> {
 
     private final Function<T, Locale> localeMapper;
-    private Locale defaultLocale = Locale.ENGLISH;
+    private final Locale defaultLocale;
     private final Map<Locale, LanguageTable> tables = new HashMap<>();
 
-    LocaleManager(Function<T, Locale> localeMapper) {
+    LocaleManager(Function<T, Locale> localeMapper, Locale defaultLocale) {
         this.localeMapper = localeMapper;
+        this.defaultLocale = defaultLocale;
     }
 
     public static <T> LocaleManager<T> create(@NonNls Function<T, Locale> localeMapper) {
-        return new LocaleManager<>(localeMapper);
+        return create(localeMapper, Locale.ENGLISH);
     }
 
-    /**
-     * Changes the default locale to use if the specified language key is missing for the desired locale
-     * @param locale
-     * @return Previous default locale
-     */
-    public Locale setDefaultLocale(Locale locale) {
-        Locale prev = this.defaultLocale;
-        this.defaultLocale = locale;
-        return prev;
+    public static <T> LocaleManager<T> create(@NonNls Function<T, Locale> localeMapper, Locale defaultLocale) {
+        return new LocaleManager<>(localeMapper, defaultLocale);
     }
 
     public Locale getDefaultLocale() {
         return defaultLocale;
     }
 
+    public void addMessageBundle(String bundleName, Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
+        for (String key : bundle.keySet()) {
+            addMessage(locale, MessageKey.of(key), bundle.getString(key));
+        }
+    }
     public void addMessages(Locale locale, @NotNull Map<MessageKey, String> messages) {
         getTable(locale).addMessages(messages);
     }
