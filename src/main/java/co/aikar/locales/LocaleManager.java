@@ -49,7 +49,12 @@ public class LocaleManager <T> {
 
     public String getMessage(T context, MessageKey key) {
         Locale locale = localeMapper.apply(context);
+
         String message = getTable(locale).getMessage(key);
+        if (message == null && !locale.getCountry().isEmpty()) {
+            message = getTable(new Locale(locale.getLanguage())).getMessage(key);
+        }
+
         if (message == null && !Objects.equals(locale, defaultLocale)) {
             message = getTable(defaultLocale).getMessage(key);
         }
