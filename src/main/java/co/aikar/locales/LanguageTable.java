@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
-class LanguageTable {
+public class LanguageTable {
 
     private final Locale locale;
     private final Map<MessageKey, String> messages = new HashMap<>();
