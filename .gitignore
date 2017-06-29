@@ -10,7 +10,16 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Idea per-user files
+.idea/workspace.xml
+.idea/dictionaries
+.idea/misc.xml
+.idea/libraries
+.idea/kotlinc.xml
+
+
 # Package Files #
+target/
 *.jar
 *.war
 *.ear
