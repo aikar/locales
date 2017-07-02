@@ -68,24 +68,13 @@ public class LocaleManager <T> {
         return locales;
     }
 
-    public boolean autoloadMessageBundles(@NotNull String... bundles) {
+    public boolean addMessageBundles(@NotNull String... bundles) {
         boolean loaded = false;
         for (String bundle : bundles) {
             for (Locale locale : getResourceBundleLocales(bundle)) {
                 if (addMessageBundle(bundle, locale)) {
                     loaded = true;
                 }
-            }
-        }
-
-        return loaded;
-    }
-
-    public boolean addMessageBundle(@NotNull String bundleName) {
-        boolean loaded = false;
-        for (Locale locale : getResourceBundleLocales(bundleName)) {
-            if (addMessageBundle(bundleName, locale)) {
-                loaded = true;
             }
         }
 
