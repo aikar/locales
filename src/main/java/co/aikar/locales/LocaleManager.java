@@ -3,12 +3,13 @@ package co.aikar.locales;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.URISyntaxException;
+import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("WeakerAccess")
 public class LocaleManager <T> {
@@ -34,21 +35,85 @@ public class LocaleManager <T> {
         return defaultLocale;
     }
 
-    public void addMessageBundle(String bundleName, Locale locale) {
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
-        for (String key : bundle.keySet()) {
-            addMessage(locale, MessageKey.of(key), bundle.getString(key));
+    public List<Locale> getResourceBundleLocales(@NotNull String bundleName) {
+        return getResourceBundleLocales(bundleName, "/");
+    }
+
+    public List<Locale> getResourceBundleLocales(@NotNull String bundleName, @NotNull @SuppressWarnings("SameParameterValue") String basePath) {
+        final ArrayList<Locale> locales = new ArrayList<>();
+        Pattern compile = Pattern.compile("_");
+        try {
+            File f = new File(LocaleManager.class.getResource(basePath).toURI());
+            final String bundle = bundleName + "_";
+            FilenameFilter filenameFilter = (dir, name) -> name.startsWith(bundle);
+            String[] list = f.list(filenameFilter);
+            if (list == null) {
+                return locales;
+            }
+            for (String s : list) {
+                String substring = s.substring(basePath.length() + bundle.length(), s.indexOf('.'));
+                String[] split = compile.split(substring);
+                if (split.length <= 1) {
+                    locales.add(new Locale(substring));
+                } else if (split.length == 2) {
+                    locales.add(new Locale(split[0], split[1]));
+                } else {
+                    locales.add(new Locale(split[0], split[1], split[2]));
+                }
+            }
+        } catch (URISyntaxException x) {
+            throw new RuntimeException(x);
+        }
+        locales.trimToSize();
+        return locales;
+    }
+
+    public boolean autoloadMessageBundles(@NotNull String... bundles) {
+        boolean loaded = false;
+        for (String bundle : bundles) {
+            for (Locale locale : getResourceBundleLocales(bundle)) {
+                if (addMessageBundle(bundle, locale)) {
+                    loaded = true;
+                }
+            }
+        }
+
+        return loaded;
+    }
+
+    public boolean addMessageBundle(@NotNull String bundleName) {
+        boolean loaded = false;
+        for (Locale locale : getResourceBundleLocales(bundleName)) {
+            if (addMessageBundle(bundleName, locale)) {
+                loaded = true;
+            }
+        }
+
+        return loaded;
+    }
+
+    public boolean addMessageBundle(@NotNull String bundleName, @NotNull Locale locale) {
+        try {
+            boolean found = false;
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
+            for (String key : bundle.keySet()) {
+                found = true;
+                addMessage(locale, MessageKey.of(key), bundle.getString(key));
+            }
+            return found;
+        } catch (MissingResourceException e) {
+            return false;
         }
     }
-    public void addMessages(Locale locale, @NotNull Map<MessageKey, String> messages) {
+    public void addMessages(@NotNull Locale locale, @NotNull Map<MessageKey, String> messages) {
         getTable(locale).addMessages(messages);
     }
 
-    public String addMessage(Locale locale, MessageKey key, String message) {
+    public String addMessage(@NotNull Locale locale, @NotNull MessageKey key, @NotNull String message) {
         return getTable(locale).addMessage(key, message);
     }
 
-    public String getMessage(T context, MessageKey key) {
+    public String getMessage(T context, @NotNull MessageKey key) {
         Locale locale = localeMapper.apply(context);
 
         String message = getTable(locale).getMessage(key);
@@ -63,7 +128,7 @@ public class LocaleManager <T> {
         return message;
     }
 
-    public LanguageTable getTable(Locale locale) {
+    public LanguageTable getTable(@NotNull Locale locale) {
         return tables.computeIfAbsent(locale, LanguageTable::new);
     }
 
