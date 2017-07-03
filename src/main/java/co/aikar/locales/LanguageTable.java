@@ -2,9 +2,7 @@ package co.aikar.locales;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
 public class LanguageTable {
@@ -30,5 +28,19 @@ public class LanguageTable {
 
     public Locale getLocale() {
         return locale;
+    }
+
+    public boolean addMessageBundle(String bundleName) {
+        try {
+            boolean found = false;
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
+            for (String key : bundle.keySet()) {
+                found = true;
+                addMessage(MessageKey.of(key), bundle.getString(key));
+            }
+            return found;
+        } catch (MissingResourceException e) {
+            return false;
+        }
     }
 }
