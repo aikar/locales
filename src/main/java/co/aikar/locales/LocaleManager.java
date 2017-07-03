@@ -21,11 +21,13 @@ import java.util.regex.Pattern;
 public class LocaleManager <T> {
     private static Pattern SPLIT_PATTERN = Pattern.compile("_");
     private volatile Reflections resourceScanner;
+    private final Class<?> classpathOwner;
     private final Function<T, Locale> localeMapper;
     private final Locale defaultLocale;
     private final Map<Locale, LanguageTable> tables = new HashMap<>();
 
-    LocaleManager(Class<?> owner, Function<T, Locale> localeMapper, Locale defaultLocale) {
+    LocaleManager(Class<?> classpathOwner, Function<T, Locale> localeMapper, Locale defaultLocale) {
+        this.classpathOwner = classpathOwner;
         this.localeMapper = localeMapper;
         this.defaultLocale = defaultLocale;
     }
@@ -51,23 +53,23 @@ public class LocaleManager <T> {
 
     /**
      *
-     * @param owner A class that owns this LocaleManager for ClassPath lookup
+     * @param classpathOwner A class that owns this LocaleManager for ClassPath lookup
      * @param localeMapper Mapper to map a context to Locale
      * @param <T> Context Class Type
      */
-    public static <T> LocaleManager<T> create(Class<?> owner, @NotNull Function<T, Locale> localeMapper) {
-        return new LocaleManager<>(owner, localeMapper, Locale.ENGLISH);
+    public static <T> LocaleManager<T> create(Class<?> classpathOwner, @NotNull Function<T, Locale> localeMapper) {
+        return new LocaleManager<>(classpathOwner, localeMapper, Locale.ENGLISH);
     }
 
     /**
      *
-     * @param owner A class that owns this LocaleManager for ClassPath lookup
+     * @param classpathOwner A class that owns this LocaleManager for ClassPath lookup
      * @param localeMapper Mapper to map a context to Locale
      * @param defaultLocale Default Locale
      * @param <T> Context Class Type
      */
-    public static <T> LocaleManager<T> create(Class<?> owner, @NotNull Function<T, Locale> localeMapper, Locale defaultLocale) {
-        return new LocaleManager<>(owner, localeMapper, defaultLocale);
+    public static <T> LocaleManager<T> create(Class<?> classpathOwner, @NotNull Function<T, Locale> localeMapper, Locale defaultLocale) {
+        return new LocaleManager<>(classpathOwner, localeMapper, defaultLocale);
     }
 
     public Locale getDefaultLocale() {
@@ -80,7 +82,7 @@ public class LocaleManager <T> {
         try {
             synchronized (this) {
                 if (resourceScanner == null) {
-                    URL location = this.getClass().getProtectionDomain().getCodeSource().getLocation();
+                    URL location = this.classpathOwner.getProtectionDomain().getCodeSource().getLocation();
                     String jarPath = URLDecoder.decode(location.getFile(), "UTF-8");
                     //System.out.println("Location: " + location + " - " + jarPath);
                     resourceScanner = new Reflections(new ConfigurationBuilder()
