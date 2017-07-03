@@ -3,9 +3,10 @@ package co.aikar.locales;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,23 +19,55 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class LocaleManager <T> {
-    private static volatile Reflections RESOURCE_SCANNER;
     private static Pattern SPLIT_PATTERN = Pattern.compile("_");
+    private volatile Reflections resourceScanner;
     private final Function<T, Locale> localeMapper;
     private final Locale defaultLocale;
     private final Map<Locale, LanguageTable> tables = new HashMap<>();
 
-    LocaleManager(Function<T, Locale> localeMapper, Locale defaultLocale) {
+    LocaleManager(Class<?> owner, Function<T, Locale> localeMapper, Locale defaultLocale) {
         this.localeMapper = localeMapper;
         this.defaultLocale = defaultLocale;
     }
 
+    /**
+     *
+     * @param localeMapper Mapper to map a context to Locale
+     * @param <T> Context Class Type
+     */
     public static <T> LocaleManager<T> create(@NotNull Function<T, Locale> localeMapper) {
         return create(localeMapper, Locale.ENGLISH);
     }
 
+    /**
+     *
+     * @param localeMapper Mapper to map a context to Locale
+     * @param defaultLocale Default Locale
+     * @param <T> Context Class Type
+     */
     public static <T> LocaleManager<T> create(@NotNull Function<T, Locale> localeMapper, Locale defaultLocale) {
-        return new LocaleManager<>(localeMapper, defaultLocale);
+        return create(localeMapper.getClass(), localeMapper, defaultLocale);
+    }
+
+    /**
+     *
+     * @param owner A class that owns this LocaleManager for ClassPath lookup
+     * @param localeMapper Mapper to map a context to Locale
+     * @param <T> Context Class Type
+     */
+    public static <T> LocaleManager<T> create(Class<?> owner, @NotNull Function<T, Locale> localeMapper) {
+        return new LocaleManager<>(owner, localeMapper, Locale.ENGLISH);
+    }
+
+    /**
+     *
+     * @param owner A class that owns this LocaleManager for ClassPath lookup
+     * @param localeMapper Mapper to map a context to Locale
+     * @param defaultLocale Default Locale
+     * @param <T> Context Class Type
+     */
+    public static <T> LocaleManager<T> create(Class<?> owner, @NotNull Function<T, Locale> localeMapper, Locale defaultLocale) {
+        return new LocaleManager<>(owner, localeMapper, defaultLocale);
     }
 
     public Locale getDefaultLocale() {
@@ -45,17 +78,22 @@ public class LocaleManager <T> {
         final ArrayList<Locale> locales = new ArrayList<>();
 
         try {
-            synchronized (LocaleManager.class) {
-                if (RESOURCE_SCANNER == null) {
-                    RESOURCE_SCANNER = new Reflections(new ConfigurationBuilder()
-                            .addUrls(ClasspathHelper.forClassLoader())
+            synchronized (this) {
+                if (resourceScanner == null) {
+                    URL location = this.getClass().getProtectionDomain().getCodeSource().getLocation();
+                    String jarPath = URLDecoder.decode(location.getFile(), "UTF-8");
+                    //System.out.println("Location: " + location + " - " + jarPath);
+                    resourceScanner = new Reflections(new ConfigurationBuilder()
+                            //.addUrls(ClasspathHelper.forClassLoader(LocaleManager.class.getClassLoader()))
+                            .addUrls(new URL("file://" + jarPath + "/"))
                             .addScanners(new ResourcesScanner()));
                 }
             }
             String pattern = patternPrefix + "_.+\\.properties";
-            Set<String> list = RESOURCE_SCANNER.getResources(Pattern.compile(pattern));
+            Set<String> list = resourceScanner.getResources(Pattern.compile(pattern));
 
             for (String s : list) {
+                //System.out.println("Processing " + patternPrefix + " : " + s);
                 String substring = s.substring(patternPrefix.length()+1, s.indexOf('.'));
                 String[] split = SPLIT_PATTERN.split(substring);
                 if (split.length <= 1) {
@@ -100,6 +138,7 @@ public class LocaleManager <T> {
         boolean found = false;
         for (Locale locale : locales) {
             if (getTable(locale).addMessageBundle(bundleName)) {
+                //System.out.println("Loaded " + bundleName+":" + locale);
                 found = true;
             }
         }
