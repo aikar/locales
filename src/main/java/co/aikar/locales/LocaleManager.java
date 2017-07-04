@@ -1,9 +1,11 @@
 package co.aikar.locales;
 
 import org.jetbrains.annotations.NotNull;
+/*
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.util.ConfigurationBuilder;
+*/
 
 import java.net.URL;
 import java.net.URLDecoder;
@@ -20,7 +22,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class LocaleManager <T> {
     private static Pattern SPLIT_PATTERN = Pattern.compile("_");
-    private volatile Reflections resourceScanner;
+    //private volatile Reflections resourceScanner;
     private final Class<?> classpathOwner;
     private final Function<T, Locale> localeMapper;
     private final Locale defaultLocale;
@@ -75,7 +77,7 @@ public class LocaleManager <T> {
     public Locale getDefaultLocale() {
         return defaultLocale;
     }
-
+/*
     public List<Locale> getResourceBundleLocales(@NotNull String patternPrefix) {
         final ArrayList<Locale> locales = new ArrayList<>();
 
@@ -113,9 +115,9 @@ public class LocaleManager <T> {
         return locales;
     }
 
-    /**
+    *//**
      * Scans for every locale available and loads the matching message bundle
-     */
+     *//*
     public boolean addMessageBundles(@NotNull String... bundles) {
         boolean loaded = false;
         for (String bundle : bundles) {
@@ -127,7 +129,7 @@ public class LocaleManager <T> {
         }
 
         return loaded;
-    }
+    }*/
 
     /**
      * If a list of locales is supplied, loads the matching message bundle for each locale.
