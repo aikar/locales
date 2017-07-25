@@ -12,7 +12,7 @@ import java.util.function.Function;
 public class LocaleManager <T> {
     //private volatile Reflections resourceScanner;
     private final Function<T, Locale> localeMapper;
-    private final Locale defaultLocale;
+    private Locale defaultLocale;
     private final Map<Locale, LanguageTable> tables = new HashMap<>();
 
     LocaleManager(Function<T, Locale> localeMapper, Locale defaultLocale) {
@@ -41,6 +41,12 @@ public class LocaleManager <T> {
 
     public Locale getDefaultLocale() {
         return defaultLocale;
+    }
+
+    public Locale setDefaultLocale(Locale defaultLocale) {
+        Locale previous = this.defaultLocale;
+        this.defaultLocale = defaultLocale;
+        return previous;
     }
 
     /**
