@@ -1,5 +1,6 @@
 # Compiled class file
 *.class
+.DS_Store
 
 # Log file
 *.log
@@ -16,6 +17,9 @@
 .idea/misc.xml
 .idea/libraries
 .idea/kotlinc.xml
+.idea/modules.xml
+**/*.iml
+
 
 
 # Package Files #
