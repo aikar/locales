@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
@@ -54,13 +55,17 @@ public class LocaleManager <T> {
      * If none are supplied, just the default locale is loaded.
      */
     public boolean addMessageBundle(@NotNull String bundleName, @NotNull Locale... locales) {
+        return this.addMessageBundle(this.getClass().getClassLoader(), bundleName, locales);
+    }
+
+    public boolean addMessageBundle(@NotNull ClassLoader classLoader, @NotNull String bundleName, @NotNull Locale... locales) {
         if (locales.length == 0) {
             locales = new Locale[] {defaultLocale};
         }
         boolean found = false;
         for (Locale locale : locales) {
-            if (getTable(locale).addMessageBundle(bundleName)) {
-                //System.out.println("Loaded " + bundleName+":" + locale);
+            if (getTable(locale).addMessageBundle(classLoader, bundleName)) {
+                //System.out.println("Loaded " + bundleName+":" + locale + " from " + classLoader.toString());
                 found = true;
             }
         }
@@ -92,6 +97,10 @@ public class LocaleManager <T> {
 
     public @NotNull LanguageTable getTable(@NotNull Locale locale) {
         return tables.computeIfAbsent(locale, LanguageTable::new);
+    }
+
+    public boolean addResourceBundle(ResourceBundle bundle, Locale locale) {
+        return this.getTable(locale).registerBundle(bundle);
     }
 
 }
