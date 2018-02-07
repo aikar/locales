@@ -31,16 +31,22 @@ public class LanguageTable {
     }
 
     public boolean addMessageBundle(String bundleName) {
+        return this.addMessageBundle(this.getClass().getClassLoader(), bundleName);
+    }
+
+    public boolean addMessageBundle(ClassLoader classLoader, String bundleName) {
         try {
-            boolean found = false;
-            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
-            for (String key : bundle.keySet()) {
-                found = true;
-                addMessage(MessageKey.of(key), bundle.getString(key));
-            }
-            return found;
+            return this.registerBundle(ResourceBundle.getBundle(bundleName, this.locale, classLoader));
         } catch (MissingResourceException e) {
             return false;
         }
+    }
+
+    public boolean registerBundle(ResourceBundle bundle) {
+        for(String key: bundle.keySet()) {
+            addMessage(MessageKey.of(key), bundle.getString(key));
+        }
+
+        return !bundle.keySet().isEmpty();
     }
 }
