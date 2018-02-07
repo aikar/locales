@@ -36,13 +36,13 @@ public class LanguageTable {
 
     public boolean addMessageBundle(ClassLoader classLoader, String bundleName) {
         try {
-            return this.registerBundle(ResourceBundle.getBundle(bundleName, this.locale, classLoader));
+            return this.addResourceBundle(ResourceBundle.getBundle(bundleName, this.locale, classLoader));
         } catch (MissingResourceException e) {
             return false;
         }
     }
 
-    public boolean registerBundle(ResourceBundle bundle) {
+    public boolean addResourceBundle(ResourceBundle bundle) {
         for(String key: bundle.keySet()) {
             addMessage(MessageKey.of(key), bundle.getString(key));
         }

@@ -100,7 +100,7 @@ public class LocaleManager <T> {
     }
 
     public boolean addResourceBundle(ResourceBundle bundle, Locale locale) {
-        return this.getTable(locale).registerBundle(bundle);
+        return this.getTable(locale).addResourceBundle(bundle);
     }
 
 }
