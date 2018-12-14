@@ -36,7 +36,7 @@ public class LanguageTable {
 
     public boolean addMessageBundle(ClassLoader classLoader, String bundleName) {
         try {
-            return this.addResourceBundle(ResourceBundle.getBundle(bundleName, this.locale, classLoader));
+            return this.addResourceBundle(ResourceBundle.getBundle(bundleName, this.locale, classLoader, new UTF8Control()));
         } catch (MissingResourceException e) {
             return false;
         }
