@@ -1,6 +1,7 @@
 package co.aikar.locales;
 
 import java.util.Map;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +16,7 @@ public class MessageKey implements MessageKeyProvider {
     }
 
     public static MessageKey of(String key) {
-        return keyMap.computeIfAbsent(key.toLowerCase().intern(), MessageKey::new);
+        return keyMap.computeIfAbsent(key.toLowerCase(Locale.ENGLISH).intern(), MessageKey::new);
     }
 
     public int hashCode() {
